@@ -5,7 +5,8 @@ from PIL import ImageEnhance
 im = Image.open("assets/australia_night_201204-10_lrg-cropped.jpg")
 import numpy as np
 import scipy as sp
-import convolver
+import scipy.signal as sig
+import kernelmaker
 
 original_image = im.copy()
 original_image = original_image.convert("L")
@@ -28,7 +29,8 @@ for x in range (0,imagewidth):
 print(imagedata)
 
 print('Starting convolve...')
-imagedata = convolver.convolve(imagedata, convolver.makekernel(151))
+imagedata = sig.fftconvolve(imagedata, kernelmaker.makekernel(151), mode="same")
+# imagedata = kernelmaker.convolve(imagedata, kernelmaker.makekernel(151))
 print('Completed convolve.')
 
 final_image = Image.fromarray(imagedata)
