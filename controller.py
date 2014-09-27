@@ -2,12 +2,13 @@ __author__ = 'arran'
 
 from imageprocessing import *
 import time
-import tkinter as tk
+from tkinter import Tk, BOTH
+from tkinter.ttk import Frame, Button, Style
 
-class Window(tk.Frame):
+class Window(Frame):
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent, background="white")
+        Frame.__init__(self, parent)
 
         self.parent = parent
 
@@ -17,18 +18,21 @@ class Window(tk.Frame):
 
         self.parent.title("Light pollution map helper")
 
-        self.pack(expand=1)
+        self.pack(fill=BOTH, expand=1)
 
+        self.style = Style()
+        self.style.theme_use("clam")
 
-
-        self.quitButton = tk.Button(self, text="Quit", command=self.quit)
+        self.quitButton = Button(self, text="Quit", command=self.quit)
         self.quitButton.place(x=50, y=50)
-        self.quitButton.pack(side="bottom")
+        self.quitButton.place(x=50, y=50)
+
+        self.style.configure("TFrame", background="#333")
 
 
 def main():
 
-    root = tk.Tk()
+    root = Tk()
     root.geometry("450x450+200+200")
     app = Window(root)
     root.mainloop()
