@@ -2,7 +2,7 @@ __author__ = 'arran'
 
 from imageprocessing import *
 import time
-from tkinter import Tk, BOTH
+from tkinter import Tk, RIGHT, LEFT, TOP, BOTTOM, BOTH, RAISED, IntVar, Checkbutton, Label, filedialog, NW, S, Entry, StringVar
 from tkinter.ttk import Frame, Button, Style
 
 class Window(Frame):
@@ -16,40 +16,104 @@ class Window(Frame):
 
     def initUI(self):
 
-        self.parent.title("Light pollution map helper")
+        self.parent.title("Light pollution map")
+        self.style = Style()
+        self.style.theme_use("alt")
 
         self.pack(fill=BOTH, expand=1)
 
-        self.style = Style()
-        self.style.theme_use("clam")
+        # Frame for choosing the image
 
-        self.quitButton = Button(self, text="Quit", command=self.quit)
-        self.quitButton.place(x=50, y=50)
-        self.quitButton.place(x=50, y=50)
+        chooseimageframe = Frame(self, relief=RAISED, borderwidth=1)
+        chooseimageframe.pack(fill=BOTH, expand=1)
 
-        self.style.configure("TFrame", background="#333")
+        chooseimageheader = Label(chooseimageframe, text="Input", font=("Arial", 10, 'bold'))
+        chooseimageheader.pack(side=TOP, anchor=NW)
+
+        filelabel = Label(chooseimageframe, text="<None selected>")
+
+        filename = StringVar()
+
+        def choosefile():
+            filename.set(filedialog.askopenfilename(parent=chooseimageframe))
+            filelabel.config(text=filename.get())
+
+        choosefilebutton = Button(chooseimageframe, text="Choose file...", command=choosefile)
+        choosefilebutton.pack(side=LEFT, padx=5, pady=5)
+        filelabel.pack(side=LEFT)
+
+        # Frame for clipping options and other preprocessing
+
+        preprocessframe = Frame(self, relief=RAISED, borderwidth=1)
+        preprocessframe.pack(fill=BOTH, expand=1)
+
+        preprocessingheader = Label(preprocessframe, text="Preprocessing", font=("Arial", 10, 'bold'))
+        preprocessingheader.pack(side=TOP, anchor=NW)
+
+        clippingentryvariable = IntVar()
+
+        clippinglabel = Label(preprocessframe, text="Remove pixels with a value of less than...")
+        clippinglabel.pack(side=LEFT)
+
+        clippingentry = Entry(preprocessframe, textvariable=clippingentryvariable, width=4)
+        clippingentry.pack(side=LEFT)
+
+        clippingentryvariable.set(value=30)
+
+        # Frame for building the kernel and convolving
+
+        convolveframe = Frame(self, relief=RAISED, borderwidth=1)
+        convolveframe.pack(fill=BOTH, expand=1)
+
+        convolveheader = Label(convolveframe, text="Convolve & kernel", font=("Arial", 10, 'bold'))
+        convolveheader.pack(side=TOP, anchor=NW)
+
+        kernelsizevariable = IntVar()
+
+        kernelsizelabel = Label(convolveframe, text="Convolve with kernel of size")
+        kernelsizelabel.pack(side=LEFT)
+
+        kernelsizeentry = Entry(convolveframe, textvariable=kernelsizevariable, width=4)
+        kernelsizeentry.pack(side=LEFT)
+
+        kernelsizevariable.set(value=30)
+
+        # Start button!
+
+        def start():
+            print("Filename was " + filename.get())
+            processImage()
+
+
+        startframe = Frame(self, relief=RAISED, borderwidth=1)
+        startframe.pack(fill=BOTH, expand=1)
+
+        startbutton = Button(startframe, text="Start!", command=start)
+        startbutton.pack(side=LEFT, anchor=S)
+
+
+
+
 
 
 def main():
 
     root = Tk()
-    root.geometry("450x450+200+200")
+    root.geometry("600x400+300+300")
     app = Window(root)
     root.mainloop()
 
-    quit()
+def processImage():
 
     imagedata = openImage("assets/nsw.jpg")
 
-    imagedata = convolve(imagedata, size=501, type='Steven')
+    imagedata = convolve(imagedata, size=501, type='default')
 
     imagedata = clip(imagedata, lightClipMinimum=50)
     # imagedata = makeContours(imagedata)
     imagedata = normalise(imagedata)
 
     saveImage(imagedata)
-
-
 
 if __name__ == '__main__':
 

@@ -5,7 +5,7 @@ import math
 
 from scipy import ndimage
 
-def makeStevenKernel(kernelsize):
+def makeDefaultKernel(kernelsize):
 
     if (kernelsize % 2) == 0:
       raise Exception("When calling makekernel method, kernel size should not be even.")
@@ -31,7 +31,7 @@ def makeStevenKernel(kernelsize):
     return kernel
 
 
-def makeDefaultKernel(kernelsize):
+def makeAlternateKernel(kernelsize):
 
    if (kernelsize % 2) == 0:
       raise Exception("When calling makekernel method, kernel size should not be even.")

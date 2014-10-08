@@ -26,12 +26,16 @@ def openImage(filepath):
 
 def saveImage(imagedata):
 
+    print('Saving image...')
+
     # Convert array back into image.
     final_image = Image.fromarray(imagedata)
 
     # Convert it back to RGB and save to JPG.
     final_image = final_image.convert("RGB")
     final_image.save('final_image.png')
+
+    print('Saving image complete.')
 
 def convolve(imagedata, size=2001, type='default'):
 
@@ -41,11 +45,13 @@ def convolve(imagedata, size=2001, type='default'):
         imagedata = sig.fftconvolve(imagedata, kernel.makeDefaultKernel(size), mode="same")
         print('Completed convolve.')
 
-    elif type == 'Steven':
+    elif type == 'alternate':
 
         print('Starting convolve...')
-        imagedata = sig.fftconvolve(imagedata, kernel.makeStevenKernel(size), mode="same")
+        imagedata = sig.fftconvolve(imagedata, kernel.makeAlternateKernel(size), mode="same")
         print('Completed convolve.')
+
+
 
     return imagedata
 
