@@ -5,7 +5,7 @@ import math
 
 from scipy import ndimage
 
-def makeDefaultKernel(kernelsize):
+def make_default_kernel(kernelsize, constant_a, constant_b):
 
     if (kernelsize % 2) == 0:
       raise Exception("When calling makekernel method, kernel size should not be even.")
@@ -26,12 +26,11 @@ def makeDefaultKernel(kernelsize):
          if (x,y) != center:
             kernel[x][y] = (A*(math.hypot((center[0] - x),(center[1]) - y)) ** B) - 0.108
 
-    print(kernel)
+    # print(kernel)
 
     return kernel
 
-
-def makeAlternateKernel(kernelsize):
+def make_alternate_kernel(kernelsize):
 
    if (kernelsize % 2) == 0:
       raise Exception("When calling makekernel method, kernel size should not be even.")

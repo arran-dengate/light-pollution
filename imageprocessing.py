@@ -18,7 +18,6 @@ def openImage(filepath):
     original_image.save('greyscale.jpg')
 
     img = mpimg.imread('greyscale.jpg')
-    print(img)
 
     imagedata = sp.array(img)
 
@@ -37,18 +36,18 @@ def saveImage(imagedata):
 
     print('Saving image complete.')
 
-def convolve(imagedata, size=2001, type='default'):
+def convolve(imagedata, size, type='default'):
 
     if type == 'default':
 
-        print('Starting convolve...')
-        imagedata = sig.fftconvolve(imagedata, kernel.makeDefaultKernel(size), mode="same")
+        print('Starting convolve with kernel size ' + str(size))
+        imagedata = sig.fftconvolve(imagedata, kernel.make_default_kernel(size, constant_a=1.13, constant_b=-0.4), mode="same")
         print('Completed convolve.')
 
     elif type == 'alternate':
 
         print('Starting convolve...')
-        imagedata = sig.fftconvolve(imagedata, kernel.makeAlternateKernel(size), mode="same")
+        imagedata = sig.fftconvolve(imagedata, kernel.make_alternate_kernel(size), mode="same")
         print('Completed convolve.')
 
 
@@ -102,11 +101,13 @@ def makeContours(imagedata):
 
     return imagedata
 
-def clip(imagedata, lightClipMinimum = 50):
+def clip(imagedata, lightclipminimum = 50):
 
     # Cut out terrain (by reducing anything with less than a certain brightness value to zero).
 
-    imagedata[imagedata < lightClipMinimum] = 0
+    print('Starting clipping with value ' + str(lightclipminimum))
+
+    imagedata[imagedata < lightclipminimum] = 0
 
     return imagedata
 
