@@ -3,8 +3,9 @@ __author__ = 'arran'
 from imageprocessing import *
 import time
 from tkinter import Tk, RIGHT, LEFT, TOP, BOTTOM, BOTH, RAISED, IntVar, Checkbutton, Label, filedialog, NW, S, SW, W, \
-    N, Entry, StringVar
+    N, E, Entry, StringVar, Canvas, PhotoImage, CENTER
 from tkinter.ttk import Frame, Button, Style
+from PIL import Image, ImageTk
 
 # Default variable values
 
@@ -30,17 +31,34 @@ class Window(Frame):
         self.style = Style()
         self.style.theme_use("alt")
 
-        self.pack(fill=BOTH, expand=1)
+        self.grid(row=0, column=0)
 
-        padding = {'padx': defaultpadding, 'pady': defaultpadding}
+        padding = {'padx':'5', 'pady':'5'}
+
+        # Images
+
+        original_image_frame = Frame(self, relief=RAISED, borderwidth=1)
+        original_image_frame.grid(row=0, column=0, rowspan=8, columnspan=8, sticky=N+S+E+W)
+
+        canvas = Canvas(original_image_frame, width=200, height=200)
+        canvas.grid(row=8, column=8)
+
+        image = Image.open('assets/act.jpg')
+        image.thumbnail((200, 200))
+        photo = ImageTk.PhotoImage(image)
+
+        photolabel = Label(image=photo)
+        photolabel.image = photo
+
+        canvas.create_image(0,0,image=photo, anchor=CENTER)
 
         # Frame for choosing the image
 
         chooseimageframe = Frame(self, relief=RAISED, borderwidth=1)
-        chooseimageframe.pack(fill=BOTH, expand=1)
+        chooseimageframe.grid(row=9, column=0, rowspan=8, columnspan=7, sticky=N+S)
 
-        chooseimageheader = Label(chooseimageframe, text="Input", font=("Arial", 10, 'bold'))
-        chooseimageheader.pack(side=TOP, anchor=NW, **padding)
+        chooseimageheader = Label(chooseimageframe, text="Original", font=("Arial", 10, 'bold'))
+        chooseimageheader.grid(row=9, column=0, **padding)
 
         filelabel = Label(chooseimageframe, text="<None selected>")
 
@@ -50,51 +68,51 @@ class Window(Frame):
             filenamevariable.set(filedialog.askopenfilename(parent=chooseimageframe))
             filelabel.config(text=filenamevariable.get())
 
-        choosefilebutton = Button(chooseimageframe, text="Choose file...", command=choosefile)
-        choosefilebutton.pack(side=LEFT, **padding)
-        filelabel.pack(side=LEFT)
+        choosefilebutton = Button(chooseimageframe, text="Choose image file...", command=choosefile)
+        choosefilebutton.grid(row=10, column=0, **padding)
+        filelabel.grid(row=10, column=1, **padding)
+
+
 
         # Frame for clipping options and other preprocessing
 
-        preprocessframe = Frame(self, relief=RAISED, borderwidth=1)
-        preprocessframe.pack(fill=BOTH, expand=1)
+        processframe = Frame(self, relief=RAISED, borderwidth=1)
+        processframe.grid(row=9, column=9, rowspan=8, columnspan=7, sticky=N+S)
 
-        preprocessingheader = Label(preprocessframe, text="Preprocessing", font=("Arial", 10, 'bold'))
-        preprocessingheader.pack(side=TOP, anchor=NW, **padding)
+        preprocessingheader = Label(processframe, text="Processing", font=("Arial", 10, 'bold'))
+        preprocessingheader.grid(row=9, column=9, **padding)
 
         clippingvariable = IntVar()
 
-        clippinglabel = Label(preprocessframe, text="Remove pixels with a value of less than...")
-        clippinglabel.pack(side=LEFT, **padding)
+        clippinglabel = Label(processframe, text="Remove pixels with a value of less than...")
+        clippinglabel.grid(row=10, column=9, **padding)
 
-        clippingentry = Entry(preprocessframe, textvariable=clippingvariable, width=4)
-        clippingentry.pack(side=LEFT, **padding)
+        clippingentry = Entry(processframe, textvariable=clippingvariable, width=4)
+        clippingentry.grid(row=10, column=10, **padding)
 
         clippingvariable.set(value=defaultclippingvalue)
 
         # Frame for building the kernel and convolving
 
-        convolveframe = Frame(self, relief=RAISED, borderwidth=1)
-        convolveframe.pack(fill=BOTH, expand=1)
-
-        convolveheader = Label(convolveframe, text="Convolve & kernel", font=("Arial", 10, 'bold'))
-        convolveheader.pack(side=TOP, anchor=NW, **padding)
+        preprocessingheader = Label(processframe, text="Convolve kernel", font=("Arial", 10, 'bold'))
+        preprocessingheader.grid(row=11, column=9, **padding)
 
         kernelsizevariable = IntVar()
 
-        constant_a_label = Label(convolveframe, text="Constant A:")
-        constant_a_label.pack(side=BOTTOM, anchor=SW, **padding)
+        kernelsizelabel = Label(processframe, text="Convolve with kernel of size")
+        kernelsizelabel.grid(row=12, column=9, **padding)
 
-        constant_a_entry = Entry(convolveframe, textvariable=kernelsizevariable, width=4)
-        constant_a_entry.pack(side=BOTTOM, anchor=SW, **padding)
-
-        kernelsizelabel = Label(convolveframe, text="Convolve with kernel of size")
-        kernelsizelabel.pack(side=LEFT, anchor=N, **padding)
-
-        kernelsizeentry = Entry(convolveframe, textvariable=kernelsizevariable, width=4)
-        kernelsizeentry.pack(side=LEFT, anchor=N, **padding)
-
+        kernelsizeentry = Entry(processframe, textvariable=kernelsizevariable, width=4)
+        kernelsizeentry.grid(row=12, column=10, **padding)
         kernelsizevariable.set(value=defaultkernelsize)
+
+        constant_a_label = Label(processframe, text="Constant A:")
+        constant_a_label.grid(row=13, column=9, **padding)
+
+        constant_a_variable = IntVar()
+
+        constant_a_entry = Entry(processframe, textvariable=constant_a_variable, width=4)
+        constant_a_entry.grid(row=13, column=10, **padding)
 
         # Start button!
 
@@ -103,23 +121,25 @@ class Window(Frame):
             processimage(filename=filenamevariable.get(), kernelsize=kernelsizevariable.get(),
                          clippingvalue=clippingvariable.get())
 
-        controlframe = Frame(self, relief=RAISED, borderwidth=1)
-        controlframe.pack(fill=BOTH, expand=1)
+        startbutton = Button(processframe, text="Start processing", command=start)
+        startbutton.grid(row=14, column=9, sticky=S, **padding)
 
-        controlheader = Label(controlframe, text="Control", font=("Arial", 10, 'bold'))
-        controlheader.pack(side=TOP, anchor=NW, **padding)
+        # Contour frame
 
-        startbutton = Button(controlframe, text="Start!", command=start)
-        startbutton.pack(side=LEFT, **padding)
+        contour_frame = Frame(self, relief=RAISED, borderwidth=1)
+        contour_frame.grid(row=9, column=17, rowspan=8, columnspan=8, sticky=N+S)
 
-        quitbutton = Button(controlframe, text="Quit", command=quit)
-        quitbutton.pack(side=LEFT, **padding)
+        contour_header = Label(contour_frame, text="Contour", font=("Arial", 10, 'bold'))
+        contour_header.grid(row=9, column=17, **padding)
+
+
+
 
 
 def main():
 
     root = Tk()
-    root.geometry("600x450+300+300")
+    root.geometry("700x450+300+300")
     app = Window(root)
     root.mainloop()
 
