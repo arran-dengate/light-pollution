@@ -6,7 +6,7 @@ import scipy.signal as sig
 import kernel
 import matplotlib.image as mpimg
 
-def openImage(filepath):
+def open_image(filepath):
 
     # Open image, convert to greyscale, then import into a SciPy array.
 
@@ -23,7 +23,7 @@ def openImage(filepath):
 
     return imagedata
 
-def saveImage(imagedata):
+def save_image(imagedata):
 
     print('Saving image...')
 
@@ -41,7 +41,8 @@ def convolve(imagedata, size, type='default'):
     if type == 'default':
 
         print('Starting convolve with kernel size ' + str(size))
-        imagedata = sig.fftconvolve(imagedata, kernel.make_default_kernel(size, constant_a=1.13, constant_b=-0.4), mode="same")
+        imagedata = sig.fftconvolve(imagedata, kernel.make_default_kernel(size, constant_a=1.13, constant_b=-0.4,
+                                                                          constant_c=-0.108), mode="same")
         print('Completed convolve.')
 
     elif type == 'alternate':

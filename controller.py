@@ -3,7 +3,7 @@ __author__ = 'arran'
 from imageprocessing import *
 import time
 from tkinter import Tk, RIGHT, LEFT, TOP, BOTTOM, BOTH, RAISED, IntVar, Checkbutton, Label, filedialog, NW, S, SW, W, \
-    N, E, Entry, StringVar, Canvas, PhotoImage, CENTER
+    N, E, Entry, StringVar, Canvas, PhotoImage, CENTER, LEFT, RIGHT
 from tkinter.ttk import Frame, Button, Style
 from PIL import Image, ImageTk
 
@@ -34,103 +34,138 @@ class Window(Frame):
         self.grid(row=0, column=0)
 
         padding = {'padx':'5', 'pady':'5'}
+        big_heading_font = ("Arial", 14, 'bold')
+        small_heading_font = ("Arial", 10, 'bold')
 
         # Images
 
         original_image_frame = Frame(self, relief=RAISED, borderwidth=1)
-        original_image_frame.grid(row=0, column=0, rowspan=8, columnspan=8, sticky=N+S+E+W)
+        original_image_frame.grid(row=1, column=0, sticky=N+S+E+W)
 
-        canvas = Canvas(original_image_frame, width=200, height=200)
-        canvas.grid(row=8, column=8)
+        convolved_image_frame = Frame(self, relief=RAISED, borderwidth=1)
+        convolved_image_frame.grid(row=1, column=1, sticky=N+S+E+W)
+
+        contoured_image_frame = Frame(self, relief=RAISED, borderwidth=1)
+        contoured_image_frame.grid(row=1, column=2, sticky=N+S+E+W)
+
+        original_canvas = Canvas(original_image_frame, width=250, height=250)
+        original_canvas.pack(**padding)
+
+        convolved_canvas = Canvas(convolved_image_frame, width=250, height=250)
+        convolved_canvas.pack(**padding)
+
+        contoured_canvas = Canvas(contoured_image_frame, width=250, height=250)
+        contoured_canvas.pack(**padding)
 
         image = Image.open('assets/act.jpg')
-        image.thumbnail((200, 200))
+        image.thumbnail((250, 250))
         photo = ImageTk.PhotoImage(image)
 
-        photolabel = Label(image=photo)
-        photolabel.image = photo
+        photo_label = Label(image=photo)
+        photo_label.image = photo
 
-        canvas.create_image(0,0,image=photo, anchor=CENTER)
+        original_canvas.create_image(0,0,image=photo, anchor=CENTER)
 
         # Frame for choosing the image
 
-        chooseimageframe = Frame(self, relief=RAISED, borderwidth=1)
-        chooseimageframe.grid(row=9, column=0, rowspan=8, columnspan=7, sticky=N+S)
+        choose_image_frame = Frame(self, relief=RAISED, borderwidth=1)
+        choose_image_frame.grid(row=0, column=0, sticky=N+S+E+W)
 
-        chooseimageheader = Label(chooseimageframe, text="Original", font=("Arial", 10, 'bold'))
-        chooseimageheader.grid(row=9, column=0, **padding)
+        processing_frame_header = Label(choose_image_frame, text="Preprocessing", font=big_heading_font)
+        processing_frame_header.grid(row=0, column=0, sticky=E, **padding)
 
-        filelabel = Label(chooseimageframe, text="<None selected>")
+        filename_variable = StringVar()
 
-        filenamevariable = StringVar()
+        preprocessing_header = Label(choose_image_frame, text="Clipping settings", font=small_heading_font)
+        preprocessing_header.grid(row=4, column=0, sticky=E, **padding)
+
+        clipping_variable = IntVar()
+
+        clipping_label = Label(choose_image_frame, text="Remove pixels with brightness under")
+        clipping_label.grid(row=5, column=0, sticky=E, **padding)
+
+        clipping_entry = Entry(choose_image_frame, textvariable=clipping_variable, width=4)
+        clipping_entry.grid(row=5, column=1, sticky=W, **padding)
+
+        clipping_variable.set(value=defaultclippingvalue)
+
+        # Load file
 
         def choosefile():
-            filenamevariable.set(filedialog.askopenfilename(parent=chooseimageframe))
-            filelabel.config(text=filenamevariable.get())
+            filename_variable.set(filedialog.askopenfilename(parent=choose_image_frame))
 
-        choosefilebutton = Button(chooseimageframe, text="Choose image file...", command=choosefile)
-        choosefilebutton.grid(row=10, column=0, **padding)
-        filelabel.grid(row=10, column=1, **padding)
-
+        load_image_button = Button(choose_image_frame, text="Load image", command=choosefile)
+        load_image_button.grid(row=6, column=0, columnspan=2, sticky=E+W+S, **padding)
+        choose_image_frame.rowconfigure(6, weight=1)
 
 
-        # Frame for clipping options and other preprocessing
 
-        processframe = Frame(self, relief=RAISED, borderwidth=1)
-        processframe.grid(row=9, column=9, rowspan=8, columnspan=7, sticky=N+S)
+        # Frame for processing tasks (clipping, convolve)
 
-        preprocessingheader = Label(processframe, text="Processing", font=("Arial", 10, 'bold'))
-        preprocessingheader.grid(row=9, column=9, **padding)
+        process_frame = Frame(self, relief=RAISED, borderwidth=1)
+        process_frame.grid(row=0, column=1, sticky=N+S+E+W)
 
-        clippingvariable = IntVar()
+        processing_frame_header = Label(process_frame, text="Convolve", font=big_heading_font)
+        processing_frame_header.grid(row=0, column=0, sticky=E, **padding)
 
-        clippinglabel = Label(processframe, text="Remove pixels with a value of less than...")
-        clippinglabel.grid(row=10, column=9, **padding)
+        convolve_header = Label(process_frame, text="Kernel settings", font=small_heading_font)
+        convolve_header.grid(row=3, column=0, sticky=E, **padding)
 
-        clippingentry = Entry(processframe, textvariable=clippingvariable, width=4)
-        clippingentry.grid(row=10, column=10, **padding)
+        kernel_size_variable = IntVar()
 
-        clippingvariable.set(value=defaultclippingvalue)
+        kernel_size_label = Label(process_frame, text="Convolve with kernel of size", justify=RIGHT)
+        kernel_size_label.grid(row=4, column=0, sticky=E, **padding)
 
-        # Frame for building the kernel and convolving
+        kernel_size_entry = Entry(process_frame, textvariable=kernel_size_variable, width=4)
+        kernel_size_entry.grid(row=4, column=1, sticky=W, **padding)
+        kernel_size_variable.set(value=defaultkernelsize)
 
-        preprocessingheader = Label(processframe, text="Convolve kernel", font=("Arial", 10, 'bold'))
-        preprocessingheader.grid(row=11, column=9, **padding)
+        # Constants for convolve equation
 
-        kernelsizevariable = IntVar()
+        constants_label = Label(process_frame, text="Falloff settings",
+                                font=("Arial", 10, 'bold'))
+        constants_label.grid(row=5, column=0, sticky=E, **padding)
 
-        kernelsizelabel = Label(processframe, text="Convolve with kernel of size")
-        kernelsizelabel.grid(row=12, column=9, **padding)
+        constant_a_label = Label(process_frame, text="Constant A:")
+        constant_b_label = Label(process_frame, text="Constant B:")
+        constant_c_label = Label(process_frame, text="Constant C:")
 
-        kernelsizeentry = Entry(processframe, textvariable=kernelsizevariable, width=4)
-        kernelsizeentry.grid(row=12, column=10, **padding)
-        kernelsizevariable.set(value=defaultkernelsize)
-
-        constant_a_label = Label(processframe, text="Constant A:")
-        constant_a_label.grid(row=13, column=9, **padding)
+        constant_a_label.grid(row=6, column=0, sticky=E, **padding)
+        constant_b_label.grid(row=7, column=0, sticky=E, **padding)
+        constant_c_label.grid(row=8, column=0, sticky=E, **padding)
 
         constant_a_variable = IntVar()
+        constant_b_variable = IntVar()
+        constant_c_variable = IntVar()
 
-        constant_a_entry = Entry(processframe, textvariable=constant_a_variable, width=4)
-        constant_a_entry.grid(row=13, column=10, **padding)
+        constant_a_entry = Entry(process_frame, textvariable=constant_a_variable, width=4)
+        constant_b_entry = Entry(process_frame, textvariable=constant_b_variable, width=4)
+        constant_c_entry = Entry(process_frame, textvariable=constant_c_variable, width=4)
+
+        constant_a_entry.grid(row=6, column=1, **padding)
+        constant_b_entry.grid(row=7, column=1, **padding)
+        constant_c_entry.grid(row=8, column=1, **padding)
+
+        constants_note = Label(process_frame, text="Falloff equation is (Ax^B)-C", font=("Arial", 9))
+        constants_note.grid(row=9, column=0, columnspan=2, sticky=E, **padding)
 
         # Start button!
 
         def start():
-            print("Filename was " + filenamevariable.get())
-            processimage(filename=filenamevariable.get(), kernelsize=kernelsizevariable.get(),
-                         clippingvalue=clippingvariable.get())
+            print("Filename was " + filename_variable.get())
+            process_image(filename=filename_variable.get(), kernel_size=kernel_size_variable.get(),
+                         clipping_value=clipping_variable.get())
 
-        startbutton = Button(processframe, text="Start processing", command=start)
-        startbutton.grid(row=14, column=9, sticky=S, **padding)
+        start_button = Button(process_frame, text="Start processing", command=start)
+        start_button.grid(row=10, column=0, columnspan=2, sticky=E+W, **padding)
 
         # Contour frame
 
         contour_frame = Frame(self, relief=RAISED, borderwidth=1)
-        contour_frame.grid(row=9, column=17, rowspan=8, columnspan=8, sticky=N+S)
+        contour_frame.grid(row=0, column=2, sticky=N+S+E+W)
 
-        contour_header = Label(contour_frame, text="Contour", font=("Arial", 10, 'bold'))
-        contour_header.grid(row=9, column=17, **padding)
+        contour_header = Label(contour_frame, text="Contour", font=big_heading_font)
+        contour_header.grid(row=0, column=0, sticky=N, columnspan=2, **padding)
 
 
 
@@ -139,23 +174,23 @@ class Window(Frame):
 def main():
 
     root = Tk()
-    root.geometry("700x450+300+300")
+    root.geometry("900x550+300+300")
     app = Window(root)
     root.mainloop()
 
-def processimage(filename, kernelsize, clippingvalue):
+def process_image(filename, kernel_size, clipping_value):
 
     start_time = time.time()
 
-    imagedata = openImage(filename)
+    image_data = open_image(filename)
 
-    imagedata = convolve(imagedata, size=kernelsize, type='default')
+    image_data = convolve(image_data, size=kernel_size, type='default')
 
-    imagedata = clip(imagedata, lightclipminimum=clippingvalue)
-    # imagedata = makeContours(imagedata)
-    imagedata = normalise(imagedata)
+    image_data = clip(image_data, lightclipminimum=clipping_value)
+    # image_data = makeContours(image_data)
+    image_data = normalise(image_data)
 
-    saveImage(imagedata)
+    save_image(image_data)
 
     print("Time taken: %d seconds" % (time.time() - start_time))
 

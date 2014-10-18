@@ -5,7 +5,7 @@ import math
 
 from scipy import ndimage
 
-def make_default_kernel(kernelsize, constant_a, constant_b):
+def make_default_kernel(kernelsize, constant_a, constant_b, constant_c):
 
     if (kernelsize % 2) == 0:
       raise Exception("When calling makekernel method, kernel size should not be even.")
@@ -14,6 +14,7 @@ def make_default_kernel(kernelsize, constant_a, constant_b):
 
     A = 1.13
     B = -0.4
+    C = -0.108
 
     # Create the kernel array and get various dimensions.
 
@@ -21,10 +22,13 @@ def make_default_kernel(kernelsize, constant_a, constant_b):
     half = (kernelsize-1)/2
     center = ((half),(half))
 
+    # The polynomial for the kernel falloff is Ax ^ B - C.
+    # In this, A B and C are constants, x is the hypotenuse.
+
     for x in range (0, kernel.shape[0]):
       for y in range (0, kernel.shape[1]):
          if (x,y) != center:
-            kernel[x][y] = (A*(math.hypot((center[0] - x),(center[1]) - y)) ** B) - 0.108
+            kernel[x][y] = (A*(math.hypot((center[0] - x),(center[1]) - y)) ** B) - C
 
     # print(kernel)
 
