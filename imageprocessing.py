@@ -3,8 +3,9 @@ from PIL import Image
 import numpy as np
 import scipy as sp
 import scipy.signal as sig
-import kernel
 import matplotlib.image as mpimg
+import math
+import time
 
 def open_image(filepath):
 
@@ -23,7 +24,7 @@ def open_image(filepath):
 
     return imagedata
 
-def save_image(imagedata):
+def save_image(imagedata, filename):
 
     print('Saving image...')
 
@@ -32,71 +33,66 @@ def save_image(imagedata):
 
     # Convert it back to RGB and save to JPG.
     final_image = final_image.convert("RGB")
-    final_image.save('final_image.png')
+    final_image.save(filename + ".png")
 
     print('Saving image complete.')
 
-def convolve(imagedata, size, type='default'):
+def convolve(imagedata, kernel_size, a, b, c):
 
-    if type == 'default':
+    if (kernel_size % 2) == 0:
+      raise Exception("When calling makekernel method, kernel size should not be even.")
 
-        print('Starting convolve with kernel size ' + str(size))
-        imagedata = sig.fftconvolve(imagedata, kernel.make_default_kernel(size, constant_a=1.13, constant_b=-0.4,
-                                                                          constant_c=-0.108), mode="same")
-        print('Completed convolve.')
+    kernel = sp.ones((kernel_size,kernel_size))
+    half = (kernel_size-1)/2
+    center = ((half),(half))
 
-    elif type == 'alternate':
+    print(kernel_size, a, b, c)
 
-        print('Starting convolve...')
-        imagedata = sig.fftconvolve(imagedata, kernel.make_alternate_kernel(size), mode="same")
-        print('Completed convolve.')
+    # The polynomial for the kernel falloff is Ax ^ B - C.
+    # In this, A B and C are constants, x is the hypotenuse.
 
+    for x in range (0, kernel.shape[0]):
+      for y in range (0, kernel.shape[1]):
+         if (x,y) != center:
+            kernel[x][y] = (a*(math.hypot((center[0] - x),(center[1]) - y)) ** b) - c
 
+    print('Starting convolve...')
+    imagedata = sig.fftconvolve(imagedata, kernel, mode="same")
+    print('Completed convolve.')
 
     return imagedata
 
-def makeContours(imagedata):
+
+def make_contours(scale_values_list):
+
+    imagedata = open_image("processed_image.png")
 
     # Apply contours
 
     print('Starting contours...')
 
-    contour1 = 5
-    contour2 = 7
-    contour3 = 10
-    contour4 = 20
-    contour5 = 30
-    contour6 = 40
-    contour7 = 60
-    contour8 = 100
-    contour9 = 200
-    max = 255
+    print(scale_values_list)
+    scale_values_list.insert(0,0) # Ensure that first contour is zero.
 
-    value = 0
+    counter = 0
 
-    for x in range (0,imagedata.shape[0]):
-      for y in range (0, imagedata.shape[1]):
-         value = imagedata[x][y]
-         if value < contour1:
-            imagedata[x][y] = 0
-         elif value < contour2:
-            imagedata[x][y] = contour1
-         elif value < contour3:
-            imagedata[x][y] = contour2
-         elif value < contour4:
-            imagedata[x][y] = contour3
-         elif value < contour5:
-            imagedata[x][y] = contour4
-         elif value < contour6:
-            imagedata[x][y] = contour5
-         elif value < contour7:
-            imagedata[x][y] = contour6
-         elif value < contour8:
-            imagedata[x][y] = contour7
-         elif value < contour9:
-            imagedata[x][y] = contour8
-         else:
-            imagedata[x][y] = max
+    start_time = time.time()
+
+    for x in range(0,imagedata.shape[0]):
+        for y in range(0, imagedata.shape[1]):
+            value = imagedata[x][y]
+            global counter
+            counter = 0
+            while counter < len(scale_values_list):
+                if value < scale_values_list[counter]:
+                    global counter
+                    imagedata[x][y] = scale_values_list[counter-1]
+                    counter = 12
+
+                global counter
+                counter+=1
+
+    print("Time taken: %d seconds" % (time.time() - start_time))
 
     print('Completed contours.')
 
